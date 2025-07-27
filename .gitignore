@@ -37,5 +37,30 @@
 *.out
 *.app
 
-# debug information files
+# Debug information files
 *.dwo
+
+# ====================
+# CLion & CMake 补充
+# ====================
+
+.idea/
+
+cmake-build-*/
+build/
+
+CMakeFiles
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+compile_commands.json
+CMakeLists.txt
+main.cpp
+
+*.log
+*.tmp
+*.swp
+*~
+
+# Windows 系统文件
+Thumbs.db
