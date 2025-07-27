@@ -5,19 +5,20 @@
 #ifndef THREADPOOL_H
 #define THREADPOOL_H
 
+#include <iostream>
+#include <stdexcept>
+#include <algorithm>
 #include <vector>
+#include <set>
+#include <string>
+#include <queue>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <queue>
 #include <functional>
 #include <future>
 #include <atomic>
-#include <string>
-#include <stdexcept>
-#include <iostream>
-#include <algorithm>
-#include <set>
+#include <type_traits>
 
 namespace yc {
 
@@ -28,7 +29,7 @@ namespace yc {
         std::condition_variable task_condition;
         std::condition_variable exit_condition;
         std::queue<std::function<void()>> queue;
-        static constexpr size_t THREAD_POOL_UPPER_LIMIT = 128; // 保守合理上限
+        static constexpr size_t THREAD_POOL_UPPER_LIMIT = 128;
         static constexpr size_t QUEUE_UPPER_LIMIT = 10000;
         std::atomic<bool> stop;
         std::atomic<bool> force_stop;
