@@ -21,7 +21,7 @@ void run_single_thread(const std::vector<int>& inputs) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "Single-thread execution time: " << duration << " ms\n";
-    // 打印部分结果以验证
+    // print particle results to verify correctness
     std::cout << "Results (first 3): ";
     for (size_t i = 0; i < std::min<size_t>(3, results.size()); ++i) {
         std::cout << results[i] << " ";
@@ -34,12 +34,10 @@ void run_thread_pool(yc::ThreadPool& pool, const std::vector<int>& inputs) {
     auto start = std::chrono::high_resolution_clock::now();
     std::vector<std::future<unsigned long long>> futures;
 
-    // 提交任务
     for (int n : inputs) {
         futures.push_back(pool.submit(fib, n));
     }
 
-    // 收集结果
     std::vector<unsigned long long> results;
     for (auto& f : futures) {
         results.push_back(f.get());
@@ -48,7 +46,7 @@ void run_thread_pool(yc::ThreadPool& pool, const std::vector<int>& inputs) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "ThreadPool execution time: " << duration << " ms\n";
-    // 打印部分结果以验证
+    // print particle results to verify correctness
     std::cout << "Results (first 3): ";
     for (size_t i = 0; i < std::min<size_t>(3, results.size()); ++i) {
         std::cout << results[i] << " ";
@@ -61,17 +59,17 @@ void test_dynamic_threads(yc::ThreadPool& pool, const std::vector<int>& inputs) 
     std::cout << "\nTesting dynamic thread adjustment...\n";
     auto start = std::chrono::high_resolution_clock::now();
 
-    pool.change_thread_num(2);// 设置线程数为 2
+    pool.change_thread_num(2);// set initial thread count to 2
     std::cout << "Set thread count to 2\n";
     std::vector<std::future<unsigned long long>> futures;
 
-    size_t half = inputs.size() / 2;// 将总任务分为两部分
+    size_t half = inputs.size() / 2;// split inputs for dynamic adjustment
     for (size_t i = 0; i < half; ++i) {
         futures.push_back(pool.submit(fib, inputs[i]));
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    pool.change_thread_num(8);// 动态增加线程数到 8
+    pool.change_thread_num(8);// increase thread count to 8
     std::cout << "Increased thread count to 8\n";
 
     for (size_t i = half; i < inputs.size(); ++i) {
