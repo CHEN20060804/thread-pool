@@ -54,8 +54,7 @@ CMakeCache.txt
 Makefile
 cmake_install.cmake
 compile_commands.json
-CMakeLists.txt
-main.cpp
+
 
 *.log
 *.tmp

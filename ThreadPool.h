@@ -48,8 +48,8 @@ namespace yc {
                 }
                 if (thread_to_stop> 0 && queue.empty()) {
                     thread_to_stop.fetch_sub(1);// --
-                    exited_threads.insert(std::this_thread::get_id()); // 记录退出线程的ID
-                    exit_condition.notify_one(); // 通知 change_thread_num
+                    exited_threads.insert(std::this_thread::get_id()); //get thread id that will exit
+                    exit_condition.notify_one(); // notify change_thread_num
                     return;
                 }
                 std::function<void()> task = std::move(queue.front());
@@ -117,7 +117,7 @@ namespace yc {
             return stop;
         }
 
-        void shut_down() {    //优雅结束
+        void shut_down() {    // shutdown gracefully
             stop = true;
             task_condition.notify_all();
             for (auto& thread : threads) {
@@ -128,14 +128,14 @@ namespace yc {
             threads.clear();
         }
 
-        std::vector<std::function<void()>> shut_down_now() {    //强制结束
+        std::vector<std::function<void()>> shut_down_now() {    //force shutdown
             std::vector<std::function<void()>> remaining_tasks;
             {
                 std::unique_lock<std::mutex> lock(queue_mtx);
                 stop = true;
                 force_stop = true;
                 while (!queue.empty()) {
-                    remaining_tasks.emplace_back(std::move(queue.front()));// 收集剩余任务
+                    remaining_tasks.emplace_back(std::move(queue.front()));// collect remaining tasks
                     queue.pop();
                 }
             }
@@ -159,7 +159,7 @@ namespace yc {
                 thread_to_stop += diff;
                 task_condition.notify_all();
                 exit_condition.wait(lock, [this, diff]{ return exited_threads.size() >= diff; });
-                // 收集结束的线程
+                // collect exited threads
                 std::vector<std::thread> to_join;
                 for (auto it = threads.begin(); it != threads.end(); ) {
                     if (exited_threads.contains(it->get_id())) {
@@ -170,7 +170,7 @@ namespace yc {
                     }
                 }
                 exited_threads.clear();
-                lock.unlock(); // 在 join 之前释放锁
+                lock.unlock(); // unlock before joining threads
                 for (auto& t : to_join) {
                     if (t.joinable()) {
                         t.join();
