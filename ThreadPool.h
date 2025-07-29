@@ -127,6 +127,8 @@ namespace yc {
             }
             threads.clear();
         }
+        // tips: if shut_down() is called, the thread pool will be discarded after tasks are completed.
+
 
         std::vector<std::function<void()>> shut_down_now() {    //force shutdown
             std::vector<std::function<void()>> remaining_tasks;
@@ -148,9 +150,17 @@ namespace yc {
             threads.clear();
             return remaining_tasks;
         }
+        // tips: if shut_down_now() is called, the thread pool will be discarded instantly,
+        //       and return tasks that were not executed.
+
+        // whatever shut_down() or shut_down_now() is called, the pool will be discarded and can't be reused.
+
 
         void change_thread_num(size_t new_num_of_threads) {
             std::unique_lock<std::mutex> lock(queue_mtx);
+            if (stop) {
+                throw std::runtime_error("Cannot change thread number after shutdown");
+            }
             const size_t current_num = threads.size();
             if (current_num == new_num_of_threads) {
                 return;
